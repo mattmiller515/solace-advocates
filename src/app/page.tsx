@@ -4,44 +4,54 @@ import { Button } from "@/components/core/Button";
 import { Input } from "@/components/core/Input";
 import { Table } from "@/components/core/Table";
 import { useEffect, useState } from "react";
+import { useGetAdvocates } from "@/hooks/useGetAdvocates";
+import { LoadingSpinner } from "@/components/core/LoadingSpinner";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
 
+  const { getAdvocates, loading } = useGetAdvocates();
   useEffect(() => {
-    console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
-      response.json().then((jsonResponse) => {
-        setAdvocates(jsonResponse.data);
-        setFilteredAdvocates(jsonResponse.data);
-      });
+    getAdvocates({
+      onSuccess: (response) => {
+        setAdvocates(response);
+      },
+      onError: (error) => {
+        console.error(error);
+      },
     });
   }, []);
 
-  const onChange = (e) => {
+  let getAdvocatesTimeout: NodeJS.Timeout;
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearTimeout(getAdvocatesTimeout);
     const searchTerm = e.target.value;
 
-    document.getElementById("search-term").innerHTML = searchTerm;
-
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.includes(searchTerm)
-      );
-    });
-
-    setFilteredAdvocates(filteredAdvocates);
+    // only fire onChange if inactive to 1 second
+    getAdvocatesTimeout = setTimeout(() => {
+      getAdvocates({
+        params: {
+          searchTerm,
+        },
+        onSuccess: (response) => {
+          setAdvocates(response);
+        },
+        onError: (error) => {
+          console.error(error);
+        },
+      });
+    }, 1000);
   };
 
   const onClick = () => {
-    console.log(advocates);
-    setFilteredAdvocates(advocates);
+    getAdvocates({
+      onSuccess: (response) => {
+        setAdvocates(response);
+      },
+      onError: (error) => {
+        console.error(error);
+      },
+    });
   };
 
   const columnData = [
@@ -60,18 +70,21 @@ export default function Home() {
       <br />
       <br />
       <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term"></span>
-        </p>
-        <Input onChange={onChange} />
+        <div>
+          <label htmlFor="search">Search</label>
+        </div>
+        <Input onChange={onChange} id="search" />
         <Button onClick={onClick} className="ml-2">
           Reset
         </Button>
       </div>
       <br />
       <br />
-      <Table columnData={columnData} data={filteredAdvocates} />
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <Table columnData={columnData} data={advocates} />
+      )}
     </main>
   );
 }
