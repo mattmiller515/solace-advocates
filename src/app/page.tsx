@@ -1,10 +1,13 @@
 "use client";
 
+import { Button } from "@/components/core/Button";
+import { Input } from "@/components/core/Input";
+import { Table } from "@/components/core/Table";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
 
   useEffect(() => {
     console.log("fetching advocates...");
@@ -41,6 +44,16 @@ export default function Home() {
     setFilteredAdvocates(advocates);
   };
 
+  const columnData = [
+    { label: "First Name", accessor: "firstName" },
+    { label: "Last Name", accessor: "lastName" },
+    { label: "City", accessor: "city" },
+    { label: "Degree", accessor: "degree" },
+    { label: "Specialties", accessor: "specialties" },
+    { label: "Years of Experience", accessor: "yearsOfExperience" },
+    { label: "Phone Number", accessor: "phoneNumber" },
+  ];
+
   return (
     <main style={{ margin: "24px" }}>
       <h1>Solace Advocates</h1>
@@ -51,41 +64,14 @@ export default function Home() {
         <p>
           Searching for: <span id="search-term"></span>
         </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
-        <button onClick={onClick}>Reset Search</button>
+        <Input onChange={onChange} />
+        <Button onClick={onClick} className="ml-2">
+          Reset
+        </Button>
       </div>
       <br />
       <br />
-      <table>
-        <thead>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>City</th>
-          <th>Degree</th>
-          <th>Specialties</th>
-          <th>Years of Experience</th>
-          <th>Phone Number</th>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <Table columnData={columnData} data={filteredAdvocates} />
     </main>
   );
 }
