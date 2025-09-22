@@ -48,7 +48,7 @@ export const SpecialtiesCell = ({
         </ul>
         <div className="modal-action">
           <form method="dialog">
-            <button className="btn" onClick={handleCloseModal}>
+            <button className="btn btn-primary" onClick={handleCloseModal}>
               Close
             </button>
           </form>
