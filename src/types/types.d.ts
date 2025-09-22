@@ -7,3 +7,8 @@ declare type Advocate = {
   yearsOfExperience: number;
   phoneNumber: number;
 };
+
+declare type GetAdvocatesResponse = {
+  advocates: Advocate[];
+  totalPages: number;
+};

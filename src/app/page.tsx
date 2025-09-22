@@ -3,55 +3,66 @@
 import { Button } from "@/components/core/Button";
 import { Input } from "@/components/core/Input";
 import { Table } from "@/components/core/Table";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGetAdvocates } from "@/hooks/useGetAdvocates";
-import { LoadingSpinner } from "@/components/core/LoadingSpinner";
+import { Pagination } from "@/components/core/Pagination";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const { getAdvocates, loading } = useGetAdvocates();
-  useEffect(() => {
+  const getAdvocatesTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleGetAdvocates = ({
+    params,
+  }: {
+    params?: {
+      searchTerm?: string;
+      page?: number;
+    };
+  }) => {
     getAdvocates({
+      params,
       onSuccess: (response) => {
-        setAdvocates(response);
+        setAdvocates(response.advocates);
+        setTotalPages(response.totalPages);
       },
       onError: (error) => {
         console.error(error);
       },
     });
+  };
+
+  useEffect(() => {
+    handleGetAdvocates({ params: { page: currentPage } });
   }, []);
 
-  let getAdvocatesTimeout: NodeJS.Timeout;
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    clearTimeout(getAdvocatesTimeout);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (getAdvocatesTimeout.current) {
+      clearTimeout(getAdvocatesTimeout.current);
+    }
     const searchTerm = e.target.value;
+    setSearchTerm(searchTerm);
 
     // only fire onChange if inactive to 1 second
-    getAdvocatesTimeout = setTimeout(() => {
-      getAdvocates({
-        params: {
-          searchTerm,
-        },
-        onSuccess: (response) => {
-          setAdvocates(response);
-        },
-        onError: (error) => {
-          console.error(error);
-        },
-      });
+    getAdvocatesTimeout.current = setTimeout(() => {
+      handleGetAdvocates({ params: { searchTerm } });
+      setCurrentPage(1);
     }, 1000);
   };
 
-  const onClick = () => {
-    getAdvocates({
-      onSuccess: (response) => {
-        setAdvocates(response);
-      },
-      onError: (error) => {
-        console.error(error);
-      },
-    });
+  const handlePageChange = (newPage: number) => {
+    handleGetAdvocates({ params: { page: newPage, searchTerm } });
+    setCurrentPage(newPage);
+  };
+
+  const handleResetSearch = () => {
+    setSearchTerm("");
+    handleGetAdvocates({ params: { page: 1 } });
+    setCurrentPage(1);
   };
 
   const columnData = [
@@ -71,20 +82,36 @@ export default function Home() {
       <br />
       <div>
         <div>
-          <label htmlFor="search">Search</label>
+          <label htmlFor="advocates-search">Search</label>
         </div>
-        <Input onChange={onChange} id="search" />
-        <Button onClick={onClick} className="ml-2">
+        <Input
+          id="advocates-search"
+          onChange={handleSearchChange}
+          value={searchTerm}
+        />
+        <Button onClick={handleResetSearch} className="ml-2">
           Reset
         </Button>
       </div>
       <br />
       <br />
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
+      <div
+        className={`flex flex-col gap-4 items-end ${
+          loading ? "opacity-50" : ""
+        }`}
+      >
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+        />
         <Table columnData={columnData} data={advocates} />
-      )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+        />
+      </div>
     </main>
   );
 }

@@ -5,15 +5,18 @@ import { advocateData } from "../../../db/seed/advocates";
 
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<Advocate[]>> {
+): Promise<NextResponse<GetAdvocatesResponse>> {
   const searchParams = request.nextUrl.searchParams;
 
   const searchTerm = searchParams.get("searchTerm");
+  const page = parseInt(searchParams.get("page") || "1");
+  const pageSize = 5;
 
-  let data = advocateData;
+  let advocates = advocateData;
 
+  // filter advocates by search term
   if (searchTerm) {
-    data = data.filter((advocate) => {
+    advocates = advocates.filter((advocate) => {
       return (
         advocate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         advocate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -27,5 +30,15 @@ export async function GET(
     });
   }
 
-  return NextResponse.json(data);
+  let totalPages = Math.ceil(advocates.length / pageSize);
+
+  // slice advocates by page for pagination
+  advocates = advocates.slice((page - 1) * pageSize, page * pageSize);
+
+  const response = {
+    advocates,
+    totalPages,
+  };
+
+  return NextResponse.json(response);
 }

@@ -11,13 +11,14 @@ export const useGetAdvocates = () => {
   }: {
     params?: {
       searchTerm?: string;
+      page?: number;
     };
-    onSuccess: (response: Advocate[]) => void;
+    onSuccess: (response: GetAdvocatesResponse) => void;
     onError: (error: AxiosError) => void;
   }) => {
     setLoading(true);
     try {
-      const response: AxiosResponse<Advocate[]> = await axios.get(
+      const response: AxiosResponse<GetAdvocatesResponse> = await axios.get(
         `/api/advocates`,
         {
           params,
