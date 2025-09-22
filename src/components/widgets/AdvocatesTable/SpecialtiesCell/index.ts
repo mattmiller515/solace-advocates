@@ -1,0 +1,1 @@
+export { SpecialtiesCell } from "./SpecialtiesCell";

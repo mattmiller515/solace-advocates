@@ -1,0 +1,1 @@
+export { AdvocatesTable } from "./AdvocatesTable";

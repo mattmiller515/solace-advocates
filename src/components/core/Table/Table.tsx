@@ -1,6 +1,13 @@
 type ColumnData = {
   label: string;
   accessor: string;
+  formatter?: ({
+    cellData,
+    rowData,
+  }: {
+    cellData: any;
+    rowData: any;
+  }) => React.ReactNode | string;
 };
 
 export const Table = ({
@@ -26,7 +33,12 @@ export const Table = ({
               <tr key={`data-row-${index}`}>
                 {columnData.map((columnDataObj) => (
                   <td key={columnDataObj.accessor}>
-                    {row[columnDataObj.accessor]}
+                    {columnDataObj.formatter
+                      ? columnDataObj.formatter({
+                          cellData: row[columnDataObj.accessor],
+                          rowData: row,
+                        })
+                      : row[columnDataObj.accessor]}
                   </td>
                 ))}
               </tr>
