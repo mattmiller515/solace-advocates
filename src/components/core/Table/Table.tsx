@@ -11,7 +11,7 @@ export const Table = ({
   data: any[];
 }) => {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto w-full">
       <table className="table table-zebra">
         <thead>
           <tr>
@@ -21,15 +21,23 @@ export const Table = ({
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
-            <tr key={`data-row-${index}`}>
-              {columnData.map((columnDataObj) => (
-                <td key={columnDataObj.accessor}>
-                  {row[columnDataObj.accessor]}
-                </td>
-              ))}
+          {data.length > 0 ? (
+            data.map((row, index) => (
+              <tr key={`data-row-${index}`}>
+                {columnData.map((columnDataObj) => (
+                  <td key={columnDataObj.accessor}>
+                    {row[columnDataObj.accessor]}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td className="text-center" colSpan={columnData.length}>
+                No data found
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
